@@ -100,7 +100,7 @@ resource "cloudflare_tunnel_config" "tunnel" {
         if record.protected == true && record.local-port != ""
       }
       content {
-        no_tls_verify = ingress_rule.value.no_tls_verify
+        no_tls_verify = origin_request.value.no_tls_verify
       }
     }
     ingress_rule {
