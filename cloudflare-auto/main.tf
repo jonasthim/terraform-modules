@@ -52,7 +52,7 @@ resource "cloudflare_access_application" "cf_app" {
   name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
-  allowed_idps = ["Google"]
+  allowed_idps = ["6bada9b1-4e6d-4710-a34e-e2509d20b115"]
   auto_redirect_to_identity = true
 }
 
@@ -65,7 +65,9 @@ resource "cloudflare_access_policy" "policy" {
   decision       = "allow"
   
   include {
-    email = var.dns_records[each.key].allowed_emails
+    google {
+      email = var.dns_records[each.key].allowed_emails
+    }
   }
 }
 
