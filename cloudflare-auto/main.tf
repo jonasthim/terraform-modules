@@ -65,9 +65,7 @@ resource "cloudflare_access_policy" "policy" {
   decision       = "allow"
   
   include {
-    google {
-      email = var.dns_records[each.key].allowed_emails
-    }
+    email = var.dns_records[each.key].allowed_emails
   }
 }
 
