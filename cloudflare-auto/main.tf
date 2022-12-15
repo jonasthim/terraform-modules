@@ -93,15 +93,8 @@ resource "cloudflare_tunnel_config" "tunnel" {
         service  = "${ingress_rule.value.protocol}://${ingress_rule.value.local-ip != "" ? ingress_rule.value.local-ip : ingress_rule.value.name}:${ingress_rule.value.local-port}"
       }
     }
-    dynamic "origin_request" {
-      for_each = {
-        for index, record in var.dns_records :
-        record.name => record
-        if record.protected == true && record.local-port != ""
-      }
-      content {
-        no_tls_verify = true
-      }
+    origin_request {
+       no_tls_verify = true
     }
     ingress_rule {
       service = "https://idontexist"
