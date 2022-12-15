@@ -78,6 +78,8 @@ output "key" {
   sensitive = true
 }
 
+1ff1595d-f5fa-4f0f-be9b-273015993c89.cfargotunnel.com
+
 resource "cloudflare_tunnel_config" "tunnel" {
   account_id = data.cloudflare_zone.domain.account_id
   tunnel_id  = cloudflare_argo_tunnel.home.id
@@ -97,5 +99,19 @@ resource "cloudflare_tunnel_config" "tunnel" {
       service = "https://idontexist"
     }
   }
+}
 
+resource "cloudflare_record" "dns-tunnel" {
+  for_each = {
+    for index, record in var.dns_records :
+    record.name => record
+    if record.protected == true && record.protocol != ""
+  }
+  zone_id         = data.cloudflare_zone.domain.zone_id
+  name            = each.value.name
+  value           = "${cloudflare_tunnel_config.tunnel.id}.cfargotunnel.com"
+  type            = each.value.type
+  ttl             = each.value.proxied ? 1 : var.default_ttl
+  proxied         = each.value.proxied
+  allow_overwrite = true
 }
