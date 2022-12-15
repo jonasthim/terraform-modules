@@ -9,10 +9,9 @@ variable "dns_records" {
     local-ip   = string
     local-port = string
     protocol   = string
-    no_tls_verify = bool
     allowed_emails = list(string)
   }))
-  default = [{ "name" : "", "type" : "", "value" : "", "protected" : false, "proxied" : true, "local-ip": "", "local-port" : "", "protocol" : "", "no_tls_verify": true, "allowed_emails": [""] }]
+  default = [{ "name" : "", "type" : "", "value" : "", "protected" : false, "proxied" : true, "local-ip": "", "local-port" : "", "protocol" : "", "allowed_emails": [""] }]
 }
 
 variable "cloudflare_api_token" {
