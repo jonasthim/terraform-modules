@@ -49,7 +49,7 @@ resource "cloudflare_access_application" "cf_app" {
     if record.protected == true
   }
   zone_id          = data.cloudflare_zone.domain.zone_id
-  name             = each.value.name
+  name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
 }
