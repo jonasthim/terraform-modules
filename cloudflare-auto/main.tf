@@ -52,6 +52,8 @@ resource "cloudflare_access_application" "cf_app" {
   name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
+  allowed_idps = ["Google"]
+  auto_redirect_to_identity = true
 }
 
 resource "cloudflare_access_policy" "policy" {
@@ -61,7 +63,7 @@ resource "cloudflare_access_policy" "policy" {
   name           = "Allowed e-mailaddresses for ${var.dns_records[each.key].name}"
   precedence     = "1"
   decision       = "allow"
-
+  
   include {
     email = var.dns_records[each.key].allowed_emails
   }
