@@ -93,7 +93,6 @@ resource "cloudflare_tunnel_config" "tunnel" {
       content {
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
         service  = "${ingress_rule.value.protocol}://${ingress_rule.value.local-ip != "" ? ingress_rule.value.local-ip : ingress_rule.value.name}:${ingress_rule.value.local-port}"
-        origin_request = {}
       }
     }
     ingress_rule {
