@@ -32,7 +32,7 @@ resource "cloudflare_record" "dns" {
   for_each = {
     for index, record in var.dns_records :
     record.name => record
-    if record.protected != true || record.local-port != ""
+    if record.protected != true || record.procotol != ""
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name
