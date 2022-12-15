@@ -52,7 +52,7 @@ resource "cloudflare_access_application" "cf_app" {
   name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
-  allowed_idps = ["Google"]
+  allowed_idps = [""]
   auto_redirect_to_identity = true
 }
 
