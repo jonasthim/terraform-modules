@@ -23,7 +23,7 @@ resource "cloudflare_record" "domain" {
   name            = var.domain.name
   value           = var.domain.target
   type            = "A"
-  ttl             = var.default_ttl
+  ttl             = 1
   proxied         = true
   allow_overwrite = true
 }
