@@ -78,8 +78,6 @@ output "key" {
   sensitive = true
 }
 
-1ff1595d-f5fa-4f0f-be9b-273015993c89.cfargotunnel.com
-
 resource "cloudflare_tunnel_config" "tunnel" {
   account_id = data.cloudflare_zone.domain.account_id
   tunnel_id  = cloudflare_argo_tunnel.home.id
