@@ -39,18 +39,18 @@ resource "cloudflare_record" "dns" {
   allow_overwrite = true
 }
 
-resource "cloudflare_access_application" "cf_app" {
-  for_each = {
-    for index, record in var.dns_records : record.name => record
-    if var.dns_records[index].zero_trust == null && var.dns_records[index]["zero_trust"]["tunnel"] == null
-  }
-  zone_id          = data.cloudflare_zone.domain.zone_id
-  name             = title(each.value.name)
-  domain           = "${each.value.name}.${var.domain.name}"
-  session_duration = "1h"
-  allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
-  auto_redirect_to_identity = true
-}
+# resource "cloudflare_access_application" "cf_app" {
+#   for_each = {
+#     for index, record in var.dns_records : record.name => record
+#     if var.dns_records[index].zero_trust == null
+#   }
+#   zone_id          = data.cloudflare_zone.domain.zone_id
+#   name             = title(each.value.name)
+#   domain           = "${each.value.name}.${var.domain.name}"
+#   session_duration = "1h"
+#   allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
+#   auto_redirect_to_identity = true
+# }
 
 # resource "cloudflare_access_policy" "policy" {
 #   for_each = {
