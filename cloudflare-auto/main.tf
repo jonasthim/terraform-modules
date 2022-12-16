@@ -69,7 +69,7 @@ resource "cloudflare_argo_tunnel" "default" {
     for index, tunnel in compact(concat(["var.default_tunnel_name"], [for record in var.dns_records: record.zero_trust != null ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.name : "" : "" ])) : index => tunnel
   }
   account_id = data.cloudflare_zone.domain.account_id
-  name       = each.value.name
+  name       = tunnel.value
   secret     = var.tunnel_secret
 }
 
