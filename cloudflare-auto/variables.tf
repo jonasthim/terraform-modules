@@ -51,17 +51,17 @@ variable "dns_records" {
     value = null
     ttl   = null
     proxied = true
-    # zero_trust = {
-    #   protected = null
-    #   allowed_idps = null
-    #   allowed_emails = null
-    #   tunnel = {
-    #     name = null
-    #     local-ip = null
-    #     local-port = null
-    #     local-protcol = null
-    #   }
-    # }
+    zero_trust = {
+      protected = null
+      allowed_idps = null
+      allowed_emails = null
+      tunnel = {
+        name = null
+        local-ip = null
+        local-port = null
+        local-protcol = null
+      }
+    }
   }]
 }
 
