@@ -65,9 +65,11 @@ resource "cloudflare_access_policy" "policy" {
 }
 
 resource "cloudflare_argo_tunnel" "default" {
-  count      = var.default_tunnel_name ? 1 : length(var.dns_records[*].zero_trust.tunnel.name)
+  for each = {
+    for index, tunnel in concat(var.default_tunnel.name+var.dns_records[*].zero_trust.tunnel.name) : index => tunnel
+  }
   account_id = data.cloudflare_zone.domain.account_id
-  name       = var.default_tunnel_name
+  name       = each.value.name
   secret     = var.tunnel_secret
 }
 
