@@ -76,8 +76,8 @@ variable "domain" {
   type = object({
     name   = string
     target = optional(string)
-    proxied = bool
-    ttl = number
+    proxied = optional(bool)
+    ttl = optional(number)
   })
   default = null
 }
