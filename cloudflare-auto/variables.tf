@@ -1,20 +1,20 @@
 variable "default_allowed_idps" {
   description = "Unless you specify allowed_ips in each `dns_record.zero_trust` this will be used as the default IDPs list"
   type = list(string)
-  validation {
-    condition = contains([regex("^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$", var.default_allowed_idps)], var.default_allowed_idps)
-    error_message = "Misconfigured IDPs (Should be a UUID)"
-  }
+  # validation {
+  #   condition = contains([regex("^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$", var.default_allowed_idps)], var.default_allowed_idps)
+  #   error_message = "Misconfigured IDPs (Should be a UUID)"
+  # }
   default = null
 }
 
 variable "default_allowed_emails" {
   description = "Unless you specify dns_record.zero_trust.allowed_mails in each `dns_record` this will be used as the default email list"
   type = list(string)
-  validation {
-    condition = contains([regex("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$", var.default_allowed_emails)], var.default_allowed_emails)
-    error_message = "Misconfigured e-mailaddresses!)"
-  }
+  # validation {
+  #   condition = contains([regex("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$", var.default_allowed_emails)], var.default_allowed_emails)
+  #   error_message = "Misconfigured e-mailaddresses!)"
+  # }
   default = null
 }
 
