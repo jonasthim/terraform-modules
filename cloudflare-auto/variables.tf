@@ -26,7 +26,7 @@ variable "default_tunnel_name" {
 
 variable "dns_records" {
   description = "Value of proxied DNS records"
-  type = object({
+  type = list(object({
     name       = string
     type       = optional(string)
     value      = optional(string)
@@ -42,7 +42,7 @@ variable "dns_records" {
         local-protocol = optional(string)
       }))
     }))
-  })
+  }))
 
   default = {
     name = null
