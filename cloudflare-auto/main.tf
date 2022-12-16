@@ -28,7 +28,7 @@ resource "cloudflare_record" "domain" {
 resource "cloudflare_record" "dns" {
   for_each = {
     for index, record in var.dns_records : record.name => record
-    if record == "berra"
+    if record[""]
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name 
@@ -41,8 +41,8 @@ resource "cloudflare_record" "dns" {
 
 resource "cloudflare_access_application" "cf_app" {
   for_each = {
-    for index, record in var.dns_records : index => record
-    if var.dns_records[index].zero_trust == null
+    for index, record in var.dns_records : record.name => record
+    if record.zero_trust != null
   }
   zone_id          = data.cloudflare_zone.domain.zone_id
   name             = title(each.value.name)
