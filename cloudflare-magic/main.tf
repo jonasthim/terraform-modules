@@ -50,6 +50,7 @@ resource "cloudflare_access_application" "cf_app" {
   session_duration          = "1h"
   allowed_idps              = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
   auto_redirect_to_identity = true
+  type                      = each.value.zero_trust.app_type == null ? "self_hosted" : each.value.zero_trust.app_type
 }
 
 resource "cloudflare_access_policy" "policy" {

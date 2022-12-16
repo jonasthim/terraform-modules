@@ -31,6 +31,7 @@ variable "dns_records" {
     ttl     = optional(number)
     zero_trust = optional(object({
       protected      = optional(bool)
+      app_type       = optional(string)
       allowed_idps   = optional(list(string))
       allowed_emails = optional(list(string))
       tunnel = optional(object({
