@@ -44,13 +44,13 @@ variable "dns_records" {
     }))
   }))
 
-  default = {
+  default = [{
     name = null
     type = null
     value = null
     proxied = true
     zero_trust = null
-  }
+  }]
 }
 
 variable "cloudflare_api_token" {
