@@ -89,7 +89,7 @@ resource "cloudflare_tunnel_config" "tunnel" {
       }
       content {
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
-        service  = "${ingress_rule.value.zero_trust.tunnel.local-protocol}://${ingress_rule.value.zero_trust.tunnel.local-ip != null ? ingress_rule.value.zero_trust.tunnel.local-ip : ingress_rule.value.name}:${ingress_rule.value.zero_trust.tunnel.local-port}"
+        service  = "${ingress_rule.value.zero_trust.tunnel.local-protocol == null ? "http" : ingress_rule.value.zero_trust.tunnel.local-protocol}://${ingress_rule.value.zero_trust.tunnel.local-ip != null ? ingress_rule.value.zero_trust.tunnel.local-ip : ingress_rule.value.name}:${ingress_rule.value.zero_trust.tunnel.local-port}"
       }
     }
     ingress_rule {
