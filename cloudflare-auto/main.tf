@@ -54,13 +54,13 @@ resource "cloudflare_access_application" "cf_app" {
 
 resource "cloudflare_access_policy" "policy" {
   for_each       = cloudflare_access_application.cf_app
-  application_id = cloudflare_access_application.cf_app[each.key].id
+  application_id = cloudflare_access_application.cf_app[each.index].id
   zone_id        = data.cloudflare_zone.domain.zone_id
   name           = "Allowed e-mailaddresses"
   precedence     = "1"
   decision       = "allow"
   include {
-    email = var.dns_records[each.key].zero_trust.allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].zero_trust.allowed_emails
+    email = var.dns_records[each.index].zero_trust.allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].zero_trust.allowed_emails
   }
 }
 
