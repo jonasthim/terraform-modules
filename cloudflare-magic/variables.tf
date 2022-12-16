@@ -5,7 +5,6 @@ variable "default_allowed_idps" {
   #   condition = contains([regex("^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$", var.default_allowed_idps)], var.default_allowed_idps)
   #   error_message = "Misconfigured IDPs (Should be a UUID)"
   # }
-  required = true
 }
 
 variable "default_allowed_emails" {
@@ -15,7 +14,6 @@ variable "default_allowed_emails" {
   #   condition = contains([regex("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$", var.default_allowed_emails)], var.default_allowed_emails)
   #   error_message = "Misconfigured e-mailaddresses!)"
   # }
-  required = true
 }
 
 variable "default_tunnel_name" {
@@ -45,7 +43,6 @@ variable "dns_records" {
     }))
   }))
 
-  required = true
 }
 
 variable "cloudflare_api_token" {
@@ -63,7 +60,6 @@ variable "tunnel_secret" {
     condition     = length(var.tunnel_secret) == 184
     error_message = "You must use a 184 length secret"
   }
-  required = true
 }
 
 variable "domain" {
@@ -74,7 +70,6 @@ variable "domain" {
     proxied = optional(bool)
     ttl     = optional(number)
   })
-  required = true
 }
 
 variable "default_ttl" {
