@@ -27,9 +27,8 @@ resource "cloudflare_record" "domain" {
 
 resource "cloudflare_record" "dns" {
   for_each = {
-    for index, record in var.dns_records :
-    record.name => record
-    if record.zero_trust == null && record.zero_trust["tunnel"] ==  
+    for index, record in var.dns_records : record.name => record
+    if record.zero_trust.tunnel != null
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name 
@@ -43,7 +42,6 @@ resource "cloudflare_record" "dns" {
 resource "cloudflare_access_application" "cf_app" {
   for_each = {
     for index, record in var.dns_records : index => record
-    if record.zero_trust != null
     if record.zero_trust.tunnel != null
   }
   zone_id          = data.cloudflare_zone.domain.zone_id
