@@ -33,8 +33,8 @@ resource "cloudflare_record" "dns" {
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name 
-  value           = each.value.value == null ? var.default_domain : each.value.value
-  type            = each.value.type == null ? var.default_dns_type : each.value.type
+  value           = each.value.value == null ? var.domain.name : each.value.value
+  type            = each.value.type == null ? "CNAME" : each.value.type
   ttl             = each.value.proxied ? 1 : var.default_ttl
   proxied         = each.value.proxied
   allow_overwrite = true
