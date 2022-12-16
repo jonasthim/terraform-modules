@@ -19,7 +19,6 @@ variable "default_allowed_emails" {
 variable "default_tunnel_name" {
   description = "Unless you specify dns_record.zero_trust.tunnel.name in each `dns_record.zero_trust` this will be used as the default tunnel name"
   type        = string
-  required    = true
 }
 
 variable "dns_records" {
@@ -49,7 +48,6 @@ variable "cloudflare_api_token" {
   description = "API token for cloudflare"
   type        = string
   sensitive   = true
-  required    = true
 }
 
 variable "tunnel_secret" {
