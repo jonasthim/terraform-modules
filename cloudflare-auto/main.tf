@@ -29,8 +29,8 @@ resource "cloudflare_record" "dns" {
   for_each = {
     for key, value in var.dns_records : 
       key => {
-        for key in value :
-          item => record
+        for u in value :
+          key => u
       }
     if record["zero_trust"] == null
   }
