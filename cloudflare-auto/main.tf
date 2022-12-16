@@ -27,11 +27,11 @@ resource "cloudflare_record" "domain" {
 
 resource "cloudflare_record" "dns" {
   for_each = {
-    for index, record in var.dns_records : record.name => record
+    for index, record in var.dns_records : record => record
     if record.zero_trust == null || (record.zero_trust != null ? (record.zero_trust.tunnel == null ? true : false) : false)
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = each.value.name 
+  name            = each.value.name
   value           = each.value.value == null ? var.domain.name : each.value.value
   type            = each.value.type == null ? "CNAME" : each.value.type
   ttl             = each.value.proxied != null ? each.value.proxied ? 1 : each.value.ttl != null ? each.value.ttl : var.default_ttl : var.default_ttl
