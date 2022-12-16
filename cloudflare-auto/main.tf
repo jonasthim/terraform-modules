@@ -85,7 +85,7 @@ resource "cloudflare_tunnel_config" "tunnel" {
       for_each = {
         for index, record in var.dns_records :
         record.name => record
-        if record.zero_trust != null ? record.zero_trust.protected == true ? record.zero_trust.local-port != null : false : false
+        if record.zero_trust != null ? record.zero_trust.protected == true ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.local-port : false : false : false
       }
       content {
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
