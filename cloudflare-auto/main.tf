@@ -101,17 +101,17 @@ resource "cloudflare_tunnel_config" "tunnel" {
   }
 }
 
-# resource "cloudflare_record" "dns-tunnel" {
-#   for_each = {
-#     for index, record in var.dns_records :
-#     record.name => record
-#     if record.zero_trust != null ? record.zero_trust.tunnel != null : false
-#   }
-#   zone_id         = data.cloudflare_zone.domain.zone_id
-#   name            = each.value.name
-#   value           = "${cloudflare_tunnel_config.tunnel.id}.cfargotunnel.com"
-#   type            = each.value.type
-#   ttl             = each.value.proxied ? 1 : var.default_ttl
-#   proxied         = each.value.proxied
-#   allow_overwrite = true
-# }
+resource "cloudflare_record" "dns-tunnel" {
+  for_each = {
+    for index, record in var.dns_records :
+    record.name => record
+    if record.zero_trust != null ? record.zero_trust.tunnel != null : false
+  }
+  zone_id         = data.cloudflare_zone.domain.zone_id
+  name            = each.value.name
+  value           = "${cloudflare_tunnel_config.tunnel[record.zero_trust_tunnel.name != null ? record.zero_trust_tunnel.name : var.default_tunnel_name  ].id}.cfargotunnel.com"
+  type            = each.value.type
+  ttl             = each.value.proxied ? 1 : var.default_ttl
+  proxied         = each.value.proxied
+  allow_overwrite = true
+}
