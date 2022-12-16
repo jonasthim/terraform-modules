@@ -53,14 +53,17 @@ resource "cloudflare_access_application" "cf_app" {
 }
 
 resource "cloudflare_access_policy" "policy" {
-  for_each       = cloudflare_access_application.cf_app
-  application_id = cloudflare_access_application.cf_app[each.key].id
+  for_each = {
+    for index, record in var.dns_records : record.name => record
+    if record.zero_trust != null ? record.zero_trust.protected != null : false
+  }
+  application_id = cloudflare_access_application.cf_app[each.value.name].id
   zone_id        = data.cloudflare_zone.domain.zone_id
   name           = "Allowed e-mailaddresses"
   precedence     = "1"
   decision       = "allow"
   include {
-    email = var.dns_records[cloudflare_access_application.cf_app[each.key]].zero_trust.allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].zero_trust.allowed_emails
+    email = each.value.zero_trust.allowed_emails == null ? var.default_allowed_emails : each.value.zero_trust.allowed_emails
   }
 }
 
