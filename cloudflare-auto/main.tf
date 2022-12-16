@@ -56,7 +56,7 @@ resource "cloudflare_access_policy" "policy" {
   for_each       = cloudflare_access_application.cf_app
   application_id = cloudflare_access_application.cf_app[each.key].id
   zone_id        = data.cloudflare_zone.domain.zone_id
-  name           = "Allowed e-mailaddresses for ${var.dns_records[each.key].zero_trust.allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].zero_trust.allowed_emails}"
+  name           = "Allowed e-mailaddresses"
   precedence     = "1"
   decision       = "allow"
   include {
