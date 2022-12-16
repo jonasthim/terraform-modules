@@ -88,7 +88,7 @@ resource "cloudflare_tunnel_config" "tunnel" {
       for_each = {
         for index, record in var.dns_records :
         record.name => record
-        if record.zero_trust != null ? (record.zero_trust.tunnel != null ? (record.zero_trust.tunnel.name == each.key || (record.zero_trust.tunnel.name != each.key && record.zero_trust.tunnel.name == null)) : false) : false
+        if record.zero_trust != null ? (record.zero_trust.tunnel != null ? (record.zero_trust.tunnel.name == each.key ? true : record.zero_trust.tunnel.name == null) : false) : false
       }
       content {
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
