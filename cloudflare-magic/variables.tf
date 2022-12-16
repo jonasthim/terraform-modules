@@ -5,7 +5,6 @@ variable "default_allowed_idps" {
   #   condition = contains([regex("^[0-9a-fA-F]{8}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{4}\\b-[0-9a-fA-F]{12}$", var.default_allowed_idps)], var.default_allowed_idps)
   #   error_message = "Misconfigured IDPs (Should be a UUID)"
   # }
-  default  = null
   required = true
 }
 
@@ -16,14 +15,12 @@ variable "default_allowed_emails" {
   #   condition = contains([regex("^\\w+([\\.-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+$", var.default_allowed_emails)], var.default_allowed_emails)
   #   error_message = "Misconfigured e-mailaddresses!)"
   # }
-  default  = null
   required = true
 }
 
 variable "default_tunnel_name" {
   description = "Unless you specify dns_record.zero_trust.tunnel.name in each `dns_record.zero_trust` this will be used as the default tunnel name"
   type        = string
-  default     = null
   required    = true
 }
 
@@ -48,14 +45,12 @@ variable "dns_records" {
     }))
   }))
 
-  default = null
   required = true
 }
 
 variable "cloudflare_api_token" {
   description = "API token for cloudflare"
   type        = string
-  default     = null
   sensitive   = true
   required    = true
 }
@@ -63,7 +58,6 @@ variable "cloudflare_api_token" {
 variable "tunnel_secret" {
   description = "API token for cloudflare"
   type        = string
-  default     = null
   sensitive   = true
   validation {
     condition     = length(var.tunnel_secret) == 184
@@ -80,7 +74,6 @@ variable "domain" {
     proxied = optional(bool)
     ttl     = optional(number)
   })
-  default  = null
   required = true
 }
 
