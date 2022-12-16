@@ -98,9 +98,6 @@ resource "cloudflare_tunnel_config" "tunnel" {
         service  = "${ingress_rule.value.protocol}://${ingress_rule.value.local-ip != "" ? ingress_rule.value.local-ip : ingress_rule.value.name}:${ingress_rule.value.local-port}"
       }
     }
-    origin_request {
-      no_tls_verify = true
-    }
     ingress_rule {
       service = "https://idontexist"
     }
