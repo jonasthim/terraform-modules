@@ -31,7 +31,7 @@ resource "cloudflare_record" "dns" {
     if record.zero_trust == null
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = each.value.name 
+  name            = each.value.name
   value           = each.value.value == null ? var.domain.name : each.value.value
   type            = each.value.type == null ? "CNAME" : each.value.type
   ttl             = each.value.proxied != null ? (each.value.proxied ? 1 : (each.value.ttl == null ? var.default_ttl : each.value.ttl)) : 1
@@ -44,11 +44,11 @@ resource "cloudflare_access_application" "cf_app" {
     for index, record in var.dns_records : record.name => record
     if record.zero_trust != null ? record.zero_trust.protected != null ? true : false : false
   }
-  zone_id          = data.cloudflare_zone.domain.zone_id
-  name             = title(each.value.name)
-  domain           = "${each.value.name}.${var.domain.name}"
-  session_duration = "1h"
-  allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
+  zone_id                   = data.cloudflare_zone.domain.zone_id
+  name                      = title(each.value.name)
+  domain                    = "${each.value.name}.${var.domain.name}"
+  session_duration          = "1h"
+  allowed_idps              = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
   auto_redirect_to_identity = true
 }
 
@@ -69,7 +69,7 @@ resource "cloudflare_access_policy" "policy" {
 
 resource "cloudflare_argo_tunnel" "default" {
   for_each = {
-    for index, tunnel in compact(concat([var.default_tunnel_name], [for record in var.dns_records: record.zero_trust != null ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.name : "" : "" ])) : tunnel => tunnel
+    for index, tunnel in compact(concat([var.default_tunnel_name], [for record in var.dns_records : record.zero_trust != null ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.name : "" : ""])) : tunnel => tunnel
   }
   account_id = data.cloudflare_zone.domain.account_id
   name       = each.value
@@ -106,7 +106,7 @@ resource "cloudflare_record" "dns-tunnel" {
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name
-  value           = "${cloudflare_tunnel_config.tunnel[each.value.zero_trust.tunnel.name != null ? each.value.zero_trust.tunnel.name : var.default_tunnel_name  ].id}.cfargotunnel.com"
+  value           = "${cloudflare_tunnel_config.tunnel[each.value.zero_trust.tunnel.name != null ? each.value.zero_trust.tunnel.name : var.default_tunnel_name].id}.cfargotunnel.com"
   type            = "CNAME"
   ttl             = 1
   proxied         = true
