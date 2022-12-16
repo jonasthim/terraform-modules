@@ -27,7 +27,7 @@ variable "default_tunnel_name" {
 variable "dns_records" {
   description = "Value of proxied DNS records"
   type = object({
-    name       = required(string)
+    name       = string
     type       = optional(string)
     value      = optional(string)
     proxied    = optional(bool)
@@ -74,7 +74,7 @@ variable "tunnel_secret" {
 variable "domain" {
   description = "Domain that you want to modify"
   type = object({
-    name   = required(string)
+    name   = string
     target = optional(string)
     proxied = bool
     ttl = number
