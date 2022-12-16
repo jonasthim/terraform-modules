@@ -27,8 +27,8 @@ resource "cloudflare_record" "domain" {
 
 resource "cloudflare_record" "dns" {
   for_each = {
-    for record in var.dns_records : "${record["zero_trust"] != null ? record["zero_trust"]["tunnel"] != null ? true : false : false }" => record
-    if !record.value 
+    for record in var.dns_records : "${record["zero_trust"] != null ? (record["zero_trust"]["tunnel"] != null ? true : false) : false }" => record
+    if record 
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name
