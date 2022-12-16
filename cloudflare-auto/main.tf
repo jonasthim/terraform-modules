@@ -27,7 +27,7 @@ resource "cloudflare_record" "domain" {
 
 resource "cloudflare_record" "dns" {
   for_each = {
-    for index, record in var.dns_records : record => record
+    for index, record in var.dns_records : record.name => record
     if var.dns_records[index].zero_trust == null
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
