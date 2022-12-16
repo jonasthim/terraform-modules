@@ -32,7 +32,7 @@ variable "dns_records" {
     value      = optional(string)
     proxied    = optional(bool)
     zero_trust = optional(object({
-      protected = bool
+      protected = optional(bool)
       allowed_idps = optional(list(string))
       allowed_emails = optional(list(string))
       tunnel = optional(object({
