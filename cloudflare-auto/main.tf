@@ -41,7 +41,7 @@ resource "cloudflare_record" "dns" {
 
 resource "cloudflare_access_application" "cf_app" {
   for_each = {
-    for index, record in var.dns_records : record.name => dns
+    for index, record in var.dns_records : index => record
     if record.zero_trust.tunnel != null
   }
   zone_id          = data.cloudflare_zone.domain.zone_id
@@ -66,7 +66,7 @@ resource "cloudflare_access_policy" "policy" {
 
 resource "cloudflare_argo_tunnel" "default" {
   for_each = {
-    for index, tunnel in concat(var.default_tunnel_name+var.dns_records.*.zero_trust.tunnel.name) : tunnel.name => tun
+    for index, tunnel in concat(var.default_tunnel_name+var.dns_records.*.zero_trust.tunnel.name) : tunnel.name => name
   }
   account_id = data.cloudflare_zone.domain.account_id
   name       = each.value.name
