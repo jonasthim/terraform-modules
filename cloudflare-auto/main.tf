@@ -49,7 +49,7 @@ resource "cloudflare_access_application" "cf_app" {
   name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
-  allowed_idps = each.value.zero_trust.allowed_idps == null ? default_allowed_idps : each.value.zero_trust.allowed_idps
+  allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
   auto_redirect_to_identity = true
 }
 
@@ -73,8 +73,9 @@ resource "cloudflare_argo_tunnel" "default" {
 }
 
 resource "cloudflare_tunnel_config" "tunnel" {
+  for_each   = cloudflare_argo_tunnel.default
   account_id = data.cloudflare_zone.domain.account_id
-  tunnel_id  = cloudflare_argo_tunnel.default.id
+  tunnel_id  = cloudflare_argo_tunnel.default[each.key].id
   config {
     warp_routing {
       enabled = false
