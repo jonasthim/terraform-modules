@@ -27,15 +27,11 @@ resource "cloudflare_record" "domain" {
 
 resource "cloudflare_record" "dns" {
   for_each = {
-    for key, value in var.dns_records : 
-      key => {
-        for u in value :
-          key => u
-      }
-    if u["zero_trust"] == null
+    for index, record in var.dns_records : record.name => record
+    if record == "berra"
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = each.value.name
+  name            = each.value.name 
   value           = each.value.value == null ? var.domain.name : each.value.value
   type            = each.value.type == null ? "CNAME" : each.value.type
   ttl             = each.value.proxied != null ? each.value.proxied ? 1 : each.value.ttl != null ? each.value.ttl : var.default_ttl : var.default_ttl
@@ -43,18 +39,18 @@ resource "cloudflare_record" "dns" {
   allow_overwrite = true
 }
 
-# resource "cloudflare_access_application" "cf_app" {
-#   for_each = {
-#     for index, record in var.dns_records : record.name => record
-#     if record.zero_trust != null ? record.zero_trust.protected != null : false
-#   }
-#   zone_id          = data.cloudflare_zone.domain.zone_id
-#   name             = title(each.value.name)
-#   domain           = "${each.value.name}.${var.domain.name}"
-#   session_duration = "1h"
-#   allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
-#   auto_redirect_to_identity = true
-# }
+resource "cloudflare_access_application" "cf_app" {
+  for_each = {
+    for index, record in var.dns_records : record => rec
+    if rec.zero_trust != null
+  }
+  zone_id          = data.cloudflare_zone.domain.zone_id
+  name             = title(each.value.name)
+  domain           = "${each.value.name}.${var.domain.name}"
+  session_duration = "1h"
+  allowed_idps = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
+  auto_redirect_to_identity = true
+}
 
 # resource "cloudflare_access_policy" "policy" {
 #   for_each = {
@@ -105,17 +101,21 @@ resource "cloudflare_record" "dns" {
 #   }
 # }
 
-# resource "cloudflare_record" "dns-tunnel" {
-#   for_each = {
-#     for index, record in var.dns_records :
-#     record.name => record
-#     if record.zero_trust != null ? record.zero_trust.tunnel != null : false
-#   }
-#   zone_id         = data.cloudflare_zone.domain.zone_id
-#   name            = each.value.name
-#   value           = "${cloudflare_tunnel_config.tunnel.id}.cfargotunnel.com"
-#   type            = each.value.type
-#   ttl             = each.value.proxied ? 1 : var.default_ttl
-#   proxied         = each.value.proxied
-#   allow_overwrite = true
+# output "test" {
+#   value = cloudflare_tunnel_config.tunnel
 # }
+
+# # resource "cloudflare_record" "dns-tunnel" {
+# #   for_each = {
+# #     for index, record in var.dns_records :
+# #     record.name => record
+# #     if record.zero_trust != null ? record.zero_trust.tunnel != null : false
+# #   }
+# #   zone_id         = data.cloudflare_zone.domain.zone_id
+# #   name            = each.value.name
+# #   value           = "${cloudflare_tunnel_config.tunnel.id}.cfargotunnel.com"
+# #   type            = each.value.type
+# #   ttl             = each.value.proxied ? 1 : var.default_ttl
+# #   proxied         = each.value.proxied
+# #   allow_overwrite = true
+# # }
