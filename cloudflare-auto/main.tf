@@ -84,6 +84,9 @@ resource "cloudflare_tunnel_config" "tunnel" {
   account_id = data.cloudflare_zone.domain.account_id
   tunnel_id  = cloudflare_argo_tunnel.home.id
   config {
+    warp_routing {
+      enabled = false
+    }
     dynamic "ingress_rule" {
       for_each = {
         for index, record in var.dns_records :
