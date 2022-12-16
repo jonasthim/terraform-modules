@@ -69,7 +69,7 @@ resource "cloudflare_access_policy" "policy" {
 
 resource "cloudflare_argo_tunnel" "default" {
   for_each = {
-    for index, tunnel in compact(concat(["var.default_tunnel_name"], [for record in var.dns_records: record.zero_trust != null ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.name : "" : "" ])) : tunnel.value => tunnel
+    for index, tunnel in compact(concat(["var.default_tunnel_name"], [for record in var.dns_records: record.zero_trust != null ? record.zero_trust.tunnel != null ? record.zero_trust.tunnel.name : "" : "" ])) : tunnel => tunnel
   }
   account_id = data.cloudflare_zone.domain.account_id
   name       = each.value
