@@ -32,7 +32,7 @@ resource "cloudflare_record" "dns" {
         for u in value :
           key => u
       }
-    if record["zero_trust"] == null
+    if u["zero_trust"] == null
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name
