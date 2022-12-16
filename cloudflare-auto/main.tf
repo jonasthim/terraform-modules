@@ -49,7 +49,7 @@ resource "cloudflare_access_application" "cf_app" {
   name             = title(each.value.name)
   domain           = "${each.value.name}.${var.domain.name}"
   session_duration = "1h"
-  allowed_idps = each.value.allowed_idps
+  allowed_idps = each.value.zero_trust.allowed_idps == null ? default_allowed_idps : each.value.zero_trust.allowed_idps
   auto_redirect_to_identity = true
 }
 
@@ -57,7 +57,7 @@ resource "cloudflare_access_policy" "policy" {
   for_each       = cloudflare_access_application.cf_app
   application_id = cloudflare_access_application.cf_app[each.key].id
   zone_id        = data.cloudflare_zone.domain.zone_id
-  name           = "Allowed e-mailaddresses for ${var.dns_records[each.key].allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].allowed_emails}"
+  name           = "Allowed e-mailaddresses for ${var.dns_records[each.key].zero_trust.allowed_emails == null ? var.default_allowed_emails : var.dns_records[each.key].zero_trust.allowed_emails}"
   precedence     = "1"
   decision       = "allow"
   include {
@@ -66,7 +66,7 @@ resource "cloudflare_access_policy" "policy" {
 }
 
 resource "cloudflare_argo_tunnel" "default" {
-  count      = var.default_tunnel_name ? 1 : length(var.dns_records[*].zero_trust.name)
+  count      = var.default_tunnel_name ? 1 : length(var.dns_records[*].zero_trust.tunnel.name)
   account_id = data.cloudflare_zone.domain.account_id
   name       = var.default_tunnel_name
   secret     = var.tunnel_secret
