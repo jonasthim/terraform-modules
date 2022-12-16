@@ -98,6 +98,10 @@ resource "cloudflare_tunnel_config" "tunnel" {
   }
 }
 
+output "test" {
+  value = cloudflare_tunnel_config.tunnel
+}
+
 resource "cloudflare_record" "dns-tunnel" {
   for_each = {
     for index, record in var.dns_records :
