@@ -50,7 +50,7 @@ variable "dns_records" {
     type = null
     value = null
     ttl   = null
-    proxied = truex§§
+    proxied = true
     # zero_trust = {
     #   protected = null
     #   allowed_idps = null
