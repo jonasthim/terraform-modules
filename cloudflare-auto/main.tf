@@ -34,7 +34,7 @@ resource "cloudflare_record" "dns" {
   name            = each.value.name 
   value           = each.value.value == null ? var.domain.name : each.value.value
   type            = each.value.type == null ? "CNAME" : each.value.type
-  ttl             = each.value.proxied != null ? each.value.proxied ? each.value.proxied : 1 : var.default_ttl
+  ttl             = each.value.proxied != null ? each.value.proxied ? 1 : each.value.ttl != null ? each.value.ttl : var.default_ttl : var.default_ttl
   proxied         = each.value.proxied == null ? true : each.value.proxied
   allow_overwrite = true
 }

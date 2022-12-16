@@ -31,6 +31,7 @@ variable "dns_records" {
     type       = optional(string)
     value      = optional(string)
     proxied    = optional(bool)
+    ttl        = optional(number)
     zero_trust = optional(object({
       protected = optional(bool)
       allowed_idps = optional(list(string))
@@ -48,6 +49,7 @@ variable "dns_records" {
     name = null
     type = null
     value = null
+    ttl   = null
     proxied = true
     zero_trust = null
   }]
