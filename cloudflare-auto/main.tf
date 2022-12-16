@@ -21,7 +21,7 @@ resource "cloudflare_record" "domain" {
   value           = var.domain.target
   type            = "A"
   ttl             = 1
-  proxied         = var.domain.proxied ? var.domain.proxied : false
+  proxied         = var.domain.proxied != null ? var.domain.proxied : false
   allow_overwrite = true
 }
 
@@ -29,7 +29,7 @@ resource "cloudflare_record" "dns" {
   for_each = {
     for index, record in var.dns_records :
     record.name => record
-    if record.zero_trust == null || record.zero_trust.tunnel == null
+    if record.zero_trust == null && record.zero_trust.tunnel == null
   }
   zone_id         = data.cloudflare_zone.domain.zone_id
   name            = each.value.name 
