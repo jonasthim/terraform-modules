@@ -64,7 +64,7 @@ resource "cloudflare_access_policy" "policy" {
   precedence     = "1"
   decision       = "allow"
   include {
-    email = each.value.zero_trust.allowed_emails == null ? var.default_allowed_emails : each.value.zero_trust.allowed_emails
+    email = each.value.zero_trust.allowed_emails == null ? var.default_allowed_emails : concat(each.value.zero_trust.allowed_emails, var.default_allowed_emails)
   }
 }
 
