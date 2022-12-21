@@ -114,20 +114,20 @@ resource "cloudflare_record" "dns-tunnel" {
   allow_overwrite = true
 }
 
-resource "cloudflare_page_rule" "page_rule" {
-  for_each = {
-    for index, record in var.dns_records :
-    record.name => record
-    if record.zero_trust != null ? record.zero_trust.tunnel != null : false
-  }
-  zone_id = data.cloudflare_zone.domain.zone_id
-  target = "https://plex.thim.dev/*"
-  priority = 1
+# resource "cloudflare_page_rule" "page_rule" {
+#   for_each = {
+#     for index, record in var.dns_records :
+#     record.name => record
+#     if record.zero_trust != null ? record.zero_trust.tunnel != null : false
+#   }
+#   zone_id = data.cloudflare_zone.domain.zone_id
+#   target = "https://plex.thim.dev/*"
+#   priority = 1
 
-  actions {
-    cache_level = bypass
-  }
-}
+#   actions {
+#     cache_level = bypass
+#   }
+# }
 
 # Workaround until https://github.com/cloudflare/terraform-provider-cloudflare/issues/2072 is solved
 
