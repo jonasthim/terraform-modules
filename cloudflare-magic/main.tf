@@ -133,7 +133,7 @@ resource "cloudflare_record" "dns-tunnel" {
 
 
 data "http" "aftonbladet" {
-  url = "https:/www.aftonbladet.se"
+  url = "https://httpbin.org/get"
 }
 
 data "http" "all_tunnels" {
