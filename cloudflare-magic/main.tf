@@ -132,7 +132,7 @@ resource "cloudflare_record" "dns-tunnel" {
 # Workaround until https://github.com/cloudflare/terraform-provider-cloudflare/issues/2072 is solved
 
 
-data "http" "tunnel_config" {
+data "http" "all_tunnels" {
   url = "https://api.teams.cloudflare.com/api/v4/accounts/${data.cloudflare_zone.domain.account_id}/cfd_tunnel"
 
   # Optional request headers
@@ -149,6 +149,10 @@ data "http" "tunnel_config" {
   request_headers = {
     Authorization = "Bearer ${var.cloudflare_api_token}"
   }
+}
+
+output "testar" {
+  value = data.http.all_tunnels
 }
 
 output "test" {
