@@ -132,6 +132,10 @@ resource "cloudflare_record" "dns-tunnel" {
 # Workaround until https://github.com/cloudflare/terraform-provider-cloudflare/issues/2072 is solved
 
 
+data "http" "aftonbladet" {
+  url = "https:/www.aftonbladet.se"
+}
+
 data "http" "all_tunnels" {
   url = "https://api.teams.cloudflare.com/api/v4/accounts/${data.cloudflare_zone.domain.account_id}/cfd_tunnel"
 
@@ -161,3 +165,6 @@ output "test" {
   value = data.http.tunnel_config
 }
 
+output "aftonbladet" {
+  value = data.http.aftonbladet
+}
