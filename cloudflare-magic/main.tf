@@ -152,10 +152,12 @@ data "http" "tunnel_config" {
 }
 
 output "testar" {
+  description = "tear123"
   value = data.http.all_tunnels
 }
 
 output "test" {
+  description = "ksjdsk"
   value = data.http.tunnel_config
 }
 
