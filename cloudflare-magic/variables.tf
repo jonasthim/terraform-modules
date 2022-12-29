@@ -21,6 +21,11 @@ variable "default_tunnel_name" {
   type        = string
 }
 
+variable "default_session_duration" {
+  description = "How often a user will be forced to re-authorise. Must be in the format 48h or 2h45m."
+  type        = string
+}
+
 variable "dns_records" {
   description = "Value of proxied DNS records"
   type = list(object({
@@ -34,6 +39,7 @@ variable "dns_records" {
       app_type       = optional(string)
       allowed_idps   = optional(list(string))
       allowed_emails = optional(list(string))
+      session_duration = optional(string)
       tunnel = optional(object({
         name           = optional(string)
         local-ip       = optional(string)
