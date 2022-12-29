@@ -47,7 +47,7 @@ resource "cloudflare_access_application" "cf_app" {
   zone_id                   = data.cloudflare_zone.domain.zone_id
   name                      = title(each.value.name)
   domain                    = "${each.value.name}.${var.domain.name}"
-  session_duration          = "1h"
+  session_duration          = each.value.zero_trust.session_duration == null ? (var.default_session_duration != null ? var.default_session_duration : "1h") : each.value.zero_trust.session_duration
   allowed_idps              = each.value.zero_trust.allowed_idps == null ? var.default_allowed_idps : each.value.zero_trust.allowed_idps
   auto_redirect_to_identity = true
   type                      = each.value.zero_trust.app_type == null ? "self_hosted" : each.value.zero_trust.app_type
