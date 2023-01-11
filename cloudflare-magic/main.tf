@@ -82,6 +82,9 @@ resource "cloudflare_tunnel_config" "tunnel" {
   account_id = data.cloudflare_zone.domain.account_id
   tunnel_id  = cloudflare_argo_tunnel.default[each.key].id
   config {
+    origin_request {
+      no_tls_verify = true
+    }
     dynamic "ingress_rule" {
       for_each = {
         for index, record in var.dns_records :
@@ -112,59 +115,4 @@ resource "cloudflare_record" "dns-tunnel" {
   ttl             = 1
   proxied         = true
   allow_overwrite = true
-}
-
-# resource "cloudflare_page_rule" "page_rule" {
-#   for_each = {
-#     for index, record in var.dns_records :
-#     record.name => record
-#     if record.zero_trust != null ? record.zero_trust.tunnel != null : false
-#   }
-#   zone_id = data.cloudflare_zone.domain.zone_id
-#   target = "https://plex.thim.dev/*"
-#   priority = 1
-
-#   actions {
-#     cache_level = bypass
-#   }
-# }
-
-# Workaround until https://github.com/cloudflare/terraform-provider-cloudflare/issues/2072 is solved
-
-
-data "http" "aftonbladet" {
-  url = "https://httpbin.org/get"
-}
-
-data "http" "all_tunnels" {
-  url = "https://api.teams.cloudflare.com/api/v4/accounts/${data.cloudflare_zone.domain.account_id}/cfd_tunnel"
-
-  # Optional request headers
-  request_headers = {
-    Authorization = "Bearer ${var.cloudflare_api_token}"
-  }
-}
-
-data "http" "tunnel_config" {
-  for_each   = cloudflare_argo_tunnel.default
-  url = "https://api.teams.cloudflare.com/api/v4/accounts/${data.cloudflare_zone.domain.account_id}/cfd_tunnel/${cloudflare_argo_tunnel.default[each.key].id}/configurations"
-
-  # Optional request headers
-  request_headers = {
-    Authorization = "Bearer ${var.cloudflare_api_token}"
-  }
-}
-
-output "testar" {
-  description = "tear123"
-  value = data.http.all_tunnels
-}
-
-output "test" {
-  description = "ksjdsk"
-  value = data.http.tunnel_config
-}
-
-output "aftonbladet" {
-  value = data.http.aftonbladet
 }
