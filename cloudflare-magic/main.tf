@@ -82,9 +82,6 @@ resource "cloudflare_tunnel_config" "tunnel" {
   account_id = data.cloudflare_zone.domain.account_id
   tunnel_id  = cloudflare_argo_tunnel.default[each.key].id
   config {
-    origin_request {
-      no_tls_verify = true
-    }
     dynamic "ingress_rule" {
       for_each = {
         for index, record in var.dns_records :
