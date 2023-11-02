@@ -88,10 +88,11 @@ resource "cloudflare_tunnel_config" "tunnel" {
         record.name => record
         if record.zero_trust != null ? (record.zero_trust.tunnel != null ? (record.zero_trust.tunnel.name == each.key ? true : (each.key == var.default_tunnel_name && record.zero_trust.tunnel.name == null)) : false) : false
       }
-      origin_request {
-        no_tls_verify = true
-      }
+
       content {
+        origin_request {
+          no_tls_verify = true
+        }
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
         service  = "${ingress_rule.value.zero_trust.tunnel.local-protocol == null ? "http" : ingress_rule.value.zero_trust.tunnel.local-protocol}://${ingress_rule.value.zero_trust.tunnel.local-ip != null ? ingress_rule.value.zero_trust.tunnel.local-ip : ingress_rule.value.name}:${ingress_rule.value.zero_trust.tunnel.local-port}"
       }
