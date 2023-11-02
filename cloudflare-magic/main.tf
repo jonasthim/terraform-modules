@@ -78,9 +78,9 @@ resource "cloudflare_tunnel" "default" {
 }
 
 resource "cloudflare_tunnel_config" "tunnel" {
-  for_each   = cloudflare_argo_tunnel.default
+  for_each   = cloudflare_tunnel.default
   account_id = data.cloudflare_zone.domain.account_id
-  tunnel_id  = cloudflare_argo_tunnel.default[each.key].id
+  tunnel_id  = cloudflare_tunnel.default[each.key].id
   config {
     dynamic "ingress_rule" {
       for_each = {
