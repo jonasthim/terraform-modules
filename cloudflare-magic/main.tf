@@ -2,7 +2,7 @@ terraform {
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 3.0"
+      version = "~> 4.18"
     }
   }
 }
@@ -87,6 +87,9 @@ resource "cloudflare_tunnel_config" "tunnel" {
         for index, record in var.dns_records :
         record.name => record
         if record.zero_trust != null ? (record.zero_trust.tunnel != null ? (record.zero_trust.tunnel.name == each.key ? true : (each.key == var.default_tunnel_name && record.zero_trust.tunnel.name == null)) : false) : false
+      }
+      origin_request {
+        no_tls_verify = true
       }
       content {
         hostname = "${ingress_rule.value.name}.${var.domain.name}"
