@@ -1,48 +1,196 @@
 <!-- BEGIN_TF_DOCS -->
-## Requirements
+# Cloudflare Magic Terraform Module
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_cloudflare"></a> [cloudflare](#requirement\_cloudflare) | ~> 3.0 |
+This Terraform module manages Cloudflare resources including DNS records, Zero Trust applications, and Cloudflare Tunnels. It provides complete management of your Cloudflare infrastructure using Terraform.
 
-## Providers
+## Features
 
-| Name | Version |
-|------|---------|
-| <a name="provider_cloudflare"></a> [cloudflare](#provider\_cloudflare) | ~> 3.0 |
+- 🔒 Zero Trust Application management
+- 🚇 Automated tunnel creation and configuration
+- 🌐 DNS record management (both public and tunnel-protected)
+- 🔑 Access policy configuration
+- 🔄 Multiple tunnel support with flexible routing
 
-## Modules
+## Prerequisites
 
-No modules.
+1. Install cloudflared (needed only for running tunnels):
+```zsh
+brew install cloudflare/cloudflare/cloudflared
+```
 
-## Resources
+2. Log in to Cloudflare:
+```zsh
+cloudflared tunnel login
+```
 
-| Name | Type |
-|------|------|
-| [cloudflare_access_application.cf_app](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/access_application) | resource |
-| [cloudflare_access_policy.policy](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/access_policy) | resource |
-| [cloudflare_argo_tunnel.default](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/argo_tunnel) | resource |
-| [cloudflare_record.dns](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/record) | resource |
-| [cloudflare_record.dns-tunnel](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/record) | resource |
-| [cloudflare_record.domain](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/record) | resource |
-| [cloudflare_tunnel_config.tunnel](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/resources/tunnel_config) | resource |
-| [cloudflare_zone.domain](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs/data-sources/zone) | data source |
+## Usage
 
-## Inputs
+```hcl
+module "cloudflare_magic" {
+  source = "path/to/cloudflare-magic"
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_allow_dns_overwrite"></a> [allow\_dns\_overwrite](#input\_allow\_dns\_overwrite) | Allows overwrite of DNS | `bool` | `false` | no |
-| <a name="input_cloudflare_api_token"></a> [cloudflare\_api\_token](#input\_cloudflare\_api\_token) | API token for cloudflare | `string` | n/a | yes |
-| <a name="input_default_allowed_emails"></a> [default\_allowed\_emails](#input\_default\_allowed\_emails) | Unless you specify dns\_record.zero\_trust.allowed\_mails in each `dns_record` this will be used as the default email list | `list(string)` | n/a | yes |
-| <a name="input_default_allowed_idps"></a> [default\_allowed\_idps](#input\_default\_allowed\_idps) | Unless you specify allowed\_ips in each `dns_record.zero_trust` this will be used as the default IDPs list | `list(string)` | n/a | yes |
-| <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | Default TTL | `number` | `3600` | no |
-| <a name="input_default_tunnel_name"></a> [default\_tunnel\_name](#input\_default\_tunnel\_name) | Unless you specify dns\_record.zero\_trust.tunnel.name in each `dns_record.zero_trust` this will be used as the default tunnel name | `string` | n/a | yes |
-| <a name="input_dns_records"></a> [dns\_records](#input\_dns\_records) | Value of proxied DNS records | <pre>list(object({<br>    name    = string<br>    type    = optional(string)<br>    value   = optional(string)<br>    proxied = optional(bool)<br>    ttl     = optional(number)<br>    zero_trust = optional(object({<br>      protected      = optional(bool)<br>      app_type       = optional(string)<br>      allowed_idps   = optional(list(string))<br>      allowed_emails = optional(list(string))<br>      tunnel = optional(object({<br>        name           = optional(string)<br>        local-ip       = optional(string)<br>        local-port     = optional(string)<br>        local-protocol = optional(string)<br>      }))<br>    }))<br>  }))</pre> | n/a | yes |
-| <a name="input_domain"></a> [domain](#input\_domain) | Domain that you want to modify | <pre>object({<br>    name    = string<br>    target  = optional(string)<br>    proxied = optional(bool)<br>    ttl     = optional(number)<br>  })</pre> | n/a | yes |
-| <a name="input_tunnel_secret"></a> [tunnel\_secret](#input\_tunnel\_secret) | API token for cloudflare | `string` | n/a | yes |
+  cloudflare_api_token = var.cloudflare_api_token
+  
+  domain = {
+    name    = "example.com"
+    target  = "203.0.113.1"
+    proxied = true
+  }
 
-## Outputs
+  # All tunnels will be automatically created and configured
+  dns_records = [
+    # Public DNS record
+    {
+      name    = "www"
+      type    = "CNAME"
+      content = "example.com"
+      proxied = true
+    },
+    
+    # Zero Trust protected applications using the same tunnel
+    {
+      name = "app"
+      zero_trust = {
+        protected = true
+        allowed_emails = ["user@example.com"]
+        tunnel = {
+          name = "prod-tunnel"  # This tunnel will be created automatically
+          local_protocol = "http"
+          local_port     = "3000"
+        }
+      }
+    },
+    {
+      name = "api"
+      zero_trust = {
+        protected = true
+        allowed_emails = ["user@example.com"]
+        tunnel = {
+          name = "prod-tunnel"  # Reuse the same tunnel
+          local_protocol = "http"
+          local_port     = "8080"
+        }
+      }
+    }
+  ]
 
-No outputs.
+  default_allowed_emails = ["user@example.com"]
+  default_session_duration = "24h"
+}
+```
+
+## How It Works
+
+1. **Tunnel Creation**: The module automatically creates all required tunnels
+2. **Tunnel Configuration**: Ingress rules are configured based on your DNS records
+3. **DNS Setup**: CNAME records are created to point to your tunnels
+4. **Access Control**: Zero Trust applications and policies are configured
+
+## Running Your Tunnels
+
+After Terraform has created and configured your tunnels, you can run them:
+
+```zsh
+# Run a specific tunnel
+cloudflared tunnel run prod-tunnel
+
+# Or run multiple tunnels in different terminals
+cloudflared tunnel run prod-tunnel
+cloudflared tunnel run staging-tunnel
+```
+
+## DNS Record Configuration
+
+Each DNS record in the `dns_records` list can have the following attributes:
+
+```hcl
+{
+  name    = string
+  type    = optional(string)
+  content = optional(string)  # Updated from deprecated 'value'
+  proxied = optional(bool)
+  ttl     = optional(number)
+  zero_trust = optional(object({
+    protected        = optional(bool)
+    app_type        = optional(string)
+    allowed_idps    = optional(list(string))
+    allowed_emails  = optional(list(string))
+    session_duration = optional(string)
+    tunnel = optional(object({
+      name           = optional(string)  # Name of the tunnel to create/use
+      local_ip       = optional(string)  # Defaults to record name
+      local_port     = optional(string)  # Defaults to "80"
+      local_protocol = optional(string)  # Defaults to "http"
+    }))
+  }))
+}
+```
+
+## Examples
+
+### Multiple Applications, One Tunnel
+
+```hcl
+dns_records = [
+  {
+    name = "app"
+    zero_trust = {
+      protected = true
+      tunnel = {
+        name = "prod-tunnel"
+        local_port = "3000"
+      }
+    }
+  },
+  {
+    name = "api"
+    zero_trust = {
+      protected = true
+      tunnel = {
+        name = "prod-tunnel"  # Reuse the same tunnel
+        local_port = "8080"
+      }
+    }
+  }
+]
+```
+
+### Multiple Environments
+
+```hcl
+dns_records = [
+  {
+    name = "app"
+    zero_trust = {
+      protected = true
+      tunnel = {
+        name = "prod-tunnel"
+        local_port = "3000"
+      }
+    }
+  },
+  {
+    name = "app-staging"
+    zero_trust = {
+      protected = true
+      tunnel = {
+        name = "staging-tunnel"  # Separate tunnel for staging
+        local_port = "3000"
+      }
+    }
+  }
+]
+```
+
+## Notes
+
+- Ensure your Cloudflare API token has sufficient permissions
+- All tunnel configuration is handled by Terraform
+- You only need cloudflared CLI for running the tunnels
+- Changes to tunnel configuration are applied through your normal Terraform workflow
+- The module automatically generates secure random secrets for new tunnels
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 <!-- END_TF_DOCS -->
