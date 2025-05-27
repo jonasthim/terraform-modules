@@ -3,6 +3,27 @@
 
 This Terraform module manages Cloudflare resources including DNS records, Zero Trust applications, and Cloudflare Tunnels. It provides complete management of your Cloudflare infrastructure using Terraform.
 
+## Module Source
+
+```hcl
+module "cloudflare_magic" {
+  source = "github.com/thim/terraform-modules//cloudflare-magic"
+  # version = "~> 1.0"  # Recommended: pin to a specific version
+  
+  # Your configuration here...
+}
+```
+
+For production use, it's recommended to pin to a specific version or tag:
+
+```hcl
+module "cloudflare_magic" {
+  source = "github.com/thim/terraform-modules//cloudflare-magic?ref=v1.0.0"
+  
+  # Your configuration here...
+}
+```
+
 ## Features
 
 - 🔒 Zero Trust Application management
@@ -27,7 +48,7 @@ cloudflared tunnel login
 
 ```hcl
 module "cloudflare_magic" {
-  source = "path/to/cloudflare-magic"
+  source = "github.com/thim/terraform-modules//cloudflare-magic"
 
   cloudflare_api_token = var.cloudflare_api_token
   
