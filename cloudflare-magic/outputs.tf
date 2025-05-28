@@ -91,9 +91,19 @@ output "debug_policy_optimization" {
   description = "Debug information showing policy optimization and grouping"
   value = {
     access_policy_configs = local.access_policy_configs
-    policy_groups        = local.policy_groups
-    unique_policies      = local.unique_policies
-    app_policy_mapping   = local.app_policy_mapping
-    app_policy_names     = local.app_policy_names
+    policy_groups         = local.policy_groups
+    unique_policies       = local.unique_policies
+    app_policy_mapping    = local.app_policy_mapping
+    app_policy_names      = local.app_policy_names
+  }
+}
+
+output "debug_tunnel_validation" {
+  description = "Debug information for tunnel name validation"
+  value = {
+    all_tunnel_names    = local.tunnel_names
+    validated_names     = local.validated_tunnel_names
+    invalid_names       = local.invalid_tunnel_names
+    tunnel_name_mapping = local.tunnel_name_map
   }
 }

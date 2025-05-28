@@ -49,6 +49,42 @@ locals {
   # Extract unique tunnel names from all records
   tunnel_names = distinct(values(local.tunnel_name_map))
 
+  # Validate tunnel names to ensure they meet Cloudflare requirements
+  validated_tunnel_names = [
+    for name in local.tunnel_names : name
+    if can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$", name)) && length(name) <= 36
+  ]
+
+  # Check if any tunnel names are invalid
+  invalid_tunnel_names = setsubtract(toset(local.tunnel_names), toset(local.validated_tunnel_names))
+}
+
+# Validation to catch invalid tunnel names early
+resource "null_resource" "tunnel_name_validation" {
+  count = length(local.invalid_tunnel_names) > 0 ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "❌ ERROR: Invalid tunnel names detected: ${join(", ", local.invalid_tunnel_names)}"
+      echo ""
+      echo "Tunnel names must:"
+      echo "  - Start and end with alphanumeric characters"
+      echo "  - Contain only letters, numbers, and hyphens"
+      echo "  - Be 36 characters or less"
+      echo "  - Cannot be only hyphens"
+      echo ""
+      echo "Examples of valid names: 'prod-tunnel', 'staging', 'app1'"
+      echo "Examples of invalid names: '-invalid', 'invalid-', 'a', 'really-long-tunnel-name-that-exceeds-limits'"
+      exit 1
+    EOT
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+locals {
   # Service configuration for each zero trust enabled record with better defaults
   service_config = { for record in local.zero_trust_records :
     record.name => {
@@ -59,7 +95,7 @@ locals {
   }
 
   # Map to track which records should use which tunnel (simplified)
-  tunnel_ingress_rules = { for tunnel_name in local.tunnel_names :
+  tunnel_ingress_rules = { for tunnel_name in local.validated_tunnel_names :
     tunnel_name => [
       for record_name, mapped_tunnel in local.tunnel_name_map :
       record_name if mapped_tunnel == tunnel_name
@@ -120,16 +156,20 @@ locals {
 
 # Generate secrets for tunnels
 resource "random_id" "tunnel_secret" {
-  for_each    = toset(local.tunnel_names)
+  for_each    = toset(local.validated_tunnel_names)  # Use validated names only
   byte_length = 32
+
+  keepers = {
+    tunnel_name = each.key
+  }
 }
 
 # Create all required tunnels
 resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel" {
-  for_each   = toset(local.tunnel_names)
+  for_each   = toset(local.validated_tunnel_names)  # Use validated names only
   account_id = data.cloudflare_zone.domain.account_id
   name       = each.key
-  secret     = random_id.tunnel_secret[each.key].b64_url
+  secret     = random_id.tunnel_secret[each.key].b64_std  # Use standard base64 instead of URL-safe
 }
 
 # Configure tunnels with ingress rules

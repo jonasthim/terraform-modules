@@ -71,6 +71,11 @@ variable "dns_records" {
 variable "default_tunnel_name" {
   description = "Default tunnel name used when no specific tunnel is specified for a Zero Trust application"
   type        = string
+
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]$", var.default_tunnel_name)) && length(var.default_tunnel_name) <= 36
+    error_message = "Tunnel name must start and end with alphanumeric characters, can contain hyphens in the middle, and be 36 characters or less."
+  }
 }
 
 variable "default_session_duration" {
