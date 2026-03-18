@@ -1,6 +1,6 @@
 /**
  * # Cloudflare Magic Terraform Module
- * 
+ *
  * This module manages Cloudflare resources including DNS records, Zero Trust applications,
  * and Cloudflare Tunnels.
  */
@@ -9,7 +9,7 @@ terraform {
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 4.20"
+      version = "~> 5.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -24,10 +24,15 @@ provider "cloudflare" {
 
 # Retrieve the Cloudflare zone information for the domain
 data "cloudflare_zone" "domain" {
-  name = var.domain.name
+  filter = {
+    name = var.domain.name
+  }
 }
 
 locals {
+  zone_id    = data.cloudflare_zone.domain.id
+  account_id = data.cloudflare_zone.domain.account.id
+
   # Separate Zero Trust and public records for clearer logic
   zero_trust_records = [for record in var.dns_records : record if record.zero_trust != null]
   public_records     = [for record in var.dns_records : record if record.zero_trust == null]
@@ -65,7 +70,7 @@ resource "null_resource" "tunnel_name_validation" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      echo "❌ ERROR: Invalid tunnel names detected: ${join(", ", local.invalid_tunnel_names)}"
+      echo "ERROR: Invalid tunnel names detected: ${join(", ", local.invalid_tunnel_names)}"
       echo ""
       echo "Tunnel names must:"
       echo "  - Start and end with alphanumeric characters"
@@ -156,7 +161,7 @@ locals {
 
 # Generate secrets for tunnels
 resource "random_id" "tunnel_secret" {
-  for_each    = toset(local.validated_tunnel_names)  # Use validated names only
+  for_each    = toset(local.validated_tunnel_names)
   byte_length = 32
 
   keepers = {
@@ -166,99 +171,105 @@ resource "random_id" "tunnel_secret" {
 
 # Create all required tunnels
 resource "cloudflare_zero_trust_tunnel_cloudflared" "tunnel" {
-  for_each   = toset(local.validated_tunnel_names)  # Use validated names only
-  account_id = data.cloudflare_zone.domain.account_id
-  name       = each.key
-  secret     = random_id.tunnel_secret[each.key].b64_std  # Use standard base64 instead of URL-safe
+  for_each      = toset(local.validated_tunnel_names)
+  account_id    = local.account_id
+  name          = each.key
+  tunnel_secret = random_id.tunnel_secret[each.key].b64_std
 }
 
 # Configure tunnels with ingress rules
 resource "cloudflare_zero_trust_tunnel_cloudflared_config" "tunnel" {
   for_each   = cloudflare_zero_trust_tunnel_cloudflared.tunnel
-  account_id = data.cloudflare_zone.domain.account_id
+  account_id = local.account_id
   tunnel_id  = each.value.id
 
-  config {
-    dynamic "ingress_rule" {
-      for_each = local.tunnel_ingress_rules[each.key]
-
-      content {
-        hostname = "${ingress_rule.value}.${var.domain.name}"
-        service  = "${local.service_config[ingress_rule.value].protocol}://${local.service_config[ingress_rule.value].ip}:${local.service_config[ingress_rule.value].port}"
-        origin_request {
-          no_tls_verify = coalesce(var.tunnel_no_tls_verify, true)
+  config = {
+    ingress = concat(
+      [
+        for record_name in local.tunnel_ingress_rules[each.key] : {
+          hostname = "${record_name}.${var.domain.name}"
+          service  = "${local.service_config[record_name].protocol}://${local.service_config[record_name].ip}:${local.service_config[record_name].port}"
+          origin_request = {
+            no_tls_verify = coalesce(var.tunnel_no_tls_verify, true)
+          }
         }
-      }
-    }
-
-    # Catch-all rule
-    ingress_rule {
-      service = var.tunnel_catch_all_service
-    }
+      ],
+      [
+        {
+          service = var.tunnel_catch_all_service
+        }
+      ]
+    )
   }
 }
 
 # Create the main domain A record
-resource "cloudflare_record" "domain" {
-  zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = var.domain.name
-  content         = var.domain.target
-  type            = "A"
-  ttl             = 1
-  proxied         = coalesce(var.domain.proxied, false)
-  allow_overwrite = true
+resource "cloudflare_dns_record" "domain" {
+  zone_id = local.zone_id
+  name    = var.domain.name
+  content = var.domain.target
+  type    = "A"
+  ttl     = 1
+  proxied = coalesce(var.domain.proxied, false)
 }
 
 # Create DNS records for non-zero-trust (public) services
-resource "cloudflare_record" "public" {
+resource "cloudflare_dns_record" "public" {
   for_each = {
     for record in local.public_records : record.name => record
   }
-  zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = each.value.name
-  content         = coalesce(each.value.content, var.domain.name)
-  type            = coalesce(each.value.type, "CNAME")
-  ttl             = each.value.proxied == true ? 1 : coalesce(each.value.ttl, var.default_ttl)
-  proxied         = coalesce(each.value.proxied, true)
-  allow_overwrite = true
+  zone_id = local.zone_id
+  name    = "${each.value.name}.${var.domain.name}"
+  content = coalesce(each.value.content, var.domain.name)
+  type    = coalesce(each.value.type, "CNAME")
+  ttl     = each.value.proxied == true ? 1 : coalesce(each.value.ttl, var.default_ttl)
+  proxied = coalesce(each.value.proxied, true)
+}
+
+# Create Access Policies (standalone/reusable in v5)
+resource "cloudflare_zero_trust_access_policy" "protected" {
+  for_each = local.access_policy_configs
+
+  account_id = local.account_id
+  name       = local.app_policy_names[each.key]
+  decision   = "allow"
+  include = [
+    for email in each.value.emails : {
+      email = {
+        email = email
+      }
+    }
+  ]
 }
 
 # Create Access Applications for protected (Zero Trust) services
 resource "cloudflare_zero_trust_access_application" "protected" {
   for_each = local.access_policy_configs
 
-  zone_id                   = data.cloudflare_zone.domain.zone_id
+  zone_id                   = local.zone_id
   name                      = title(each.key)
   domain                    = "${each.key}.${var.domain.name}"
   session_duration          = each.value.session_duration
   allowed_idps              = each.value.allowed_idps
   auto_redirect_to_identity = true
   type                      = each.value.app_type
-}
 
-# Create Access Policies - one policy per application with optimized naming
-resource "cloudflare_zero_trust_access_policy" "protected" {
-  for_each = local.access_policy_configs
-
-  application_id = cloudflare_zero_trust_access_application.protected[each.key].id
-  zone_id        = data.cloudflare_zone.domain.zone_id
-  name           = local.app_policy_names[each.key]
-  precedence     = "1"
-  decision       = "allow"
-  include {
-    email = each.value.emails
-  }
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.protected[each.key].id
+      precedence = 1
+    }
+  ]
 }
 
 # Create CNAME records for tunnel-protected services
-resource "cloudflare_record" "tunnel" {
+resource "cloudflare_dns_record" "tunnel" {
   for_each = local.tunnel_name_map
 
-  zone_id         = data.cloudflare_zone.domain.zone_id
-  name            = each.key
-  content         = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel[each.value].id}.cfargotunnel.com"
-  type            = "CNAME"
-  ttl             = 1
-  proxied         = true
-  allow_overwrite = true
+  zone_id = local.zone_id
+  name    = "${each.key}.${var.domain.name}"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.tunnel[each.value].id}.cfargotunnel.com"
+  type    = "CNAME"
+  ttl     = 1
+  proxied = true
 }

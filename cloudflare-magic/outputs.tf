@@ -4,7 +4,7 @@
 
 output "zone_id" {
   description = "The zone ID of the domain"
-  value       = data.cloudflare_zone.domain.zone_id
+  value       = local.zone_id
 }
 
 output "zone_name" {
@@ -14,7 +14,7 @@ output "zone_name" {
 
 output "account_id" {
   description = "The account ID associated with the zone"
-  value       = data.cloudflare_zone.domain.account_id
+  value       = local.account_id
 }
 
 output "tunnels" {
@@ -32,13 +32,13 @@ output "dns_records" {
   description = "Information about created DNS records"
   value = {
     domain = {
-      name    = cloudflare_record.domain.name
-      content = cloudflare_record.domain.content
-      type    = cloudflare_record.domain.type
-      proxied = cloudflare_record.domain.proxied
+      name    = cloudflare_dns_record.domain.name
+      content = cloudflare_dns_record.domain.content
+      type    = cloudflare_dns_record.domain.type
+      proxied = cloudflare_dns_record.domain.proxied
     }
     public = {
-      for name, record in cloudflare_record.public : name => {
+      for name, record in cloudflare_dns_record.public : name => {
         name    = record.name
         content = record.content
         type    = record.type
@@ -46,7 +46,7 @@ output "dns_records" {
       }
     }
     tunneled = {
-      for name, record in cloudflare_record.tunnel : name => {
+      for name, record in cloudflare_dns_record.tunnel : name => {
         name    = record.name
         content = record.content
         type    = record.type
